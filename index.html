@@ -56,40 +56,6 @@
         boardData.push(gridRow);
       }
 
-      // Randomly fills spaces on board
-      newConwayGame.randomlyPopulate = function() { 
-        for (var i = 0; i < gridSize * gridSize / 8; i++) {
-          var randomCol = Math.floor(Math.random() * gridSize);
-          var randomRow = Math.floor(Math.random() * gridSize);
-          boardData[randomCol][randomRow].full = true;
-        }
-      }
-
-      // Toggles pause for game
-      newConwayGame.togglePause = function() {
-        paused = !paused;
-      }
-
-      // 
-      newConwayGame.restart = function() {
-        boardData.forEach(function(row) {
-          row.forEach(function(square) {
-            square.full = false;
-          });
-        });
-      }
-
-      newConwayGame.start = function() {
-        inputData(getData());
-        setInterval(function() {
-
-          if (!paused) {
-            inputData(getData());
-          }
-
-        }, timeStep);
-      }
-
       // sets boardData to be true
       var getData = function() {
 
@@ -127,14 +93,16 @@
         }
         boardData = newGridData;
 
-        var data = boardData.reduce(function(prev, value) {
-          return prev.concat(value);
-        },[])
+        // var data = boardData.reduce(function(prev, value) {
+        //   return prev.concat(value);
+        // },[])
+
+        var data = flatten(boardData);
 
         return data;
       }
 
-      var inputData = function(data) {
+      var renderData = function(data) {
 
         squares = svg.selectAll("rect")
             .data(data)
@@ -165,6 +133,43 @@
             });
       }
 
+      // Toggles pause for game
+      newConwayGame.togglePause = function() {
+        paused = !paused;
+      }
+
+      // 
+      newConwayGame.restart = function() {
+        boardData.forEach(function(row) {
+          row.forEach(function(square) {
+            square.full = false;
+          });
+        });
+        renderData(flatten(boardData));
+      }
+
+      // Randomly fills spaces on board
+      newConwayGame.randomlyPopulate = function() { 
+        for (var i = 0; i < gridSize * gridSize / 8; i++) {
+          var randomCol = Math.floor(Math.random() * gridSize);
+          var randomRow = Math.floor(Math.random() * gridSize);
+          boardData[randomCol][randomRow].full = true;
+        }
+
+        renderData(flatten(boardData));
+      }
+
+      newConwayGame.start = function() {
+        renderData(getData());
+        setInterval(function() {
+
+          if (!paused) {
+            renderData(getData());
+          }
+
+        }, timeStep);
+      }
+
       return newConwayGame;
     }
 
@@ -191,6 +196,21 @@
         .on("click", function() {
           game.randomlyPopulate();
         })
+
+    // utitliy functions
+    function flatten(array) {
+
+      var result = [];
+      for (var i = 0; i < array.length; i++) {
+        if (Array.isArray(array[i])) {
+          result = result.concat(flatten(array[i]));
+        } else {
+          result.push(array[i]);
+        }
+      }
+
+      return result;
+    };
 
   </script>
 </body>
